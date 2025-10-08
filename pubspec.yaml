@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.1.1
   cloud_firestore: ^6.0.2
+  pretty_qr_code: ^3.5.0
+  share_plus: ^12.0.0
+  
 
 dev_dependencies:
   flutter_test:

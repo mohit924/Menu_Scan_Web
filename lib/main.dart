@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:menu_scan_web/QRGeneratorPage.dart';
 import 'package:menu_scan_web/firebase_options.dart';
 
 void main() async {
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Name Collector',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: NamePage(),
+      home: QRManagerPage(),
       debugShowCheckedModeBanner: false,
     );
   }
