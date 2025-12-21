@@ -20,7 +20,7 @@ class PlaceOrderButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // No border radius
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       ),
       child: Text(
         title,

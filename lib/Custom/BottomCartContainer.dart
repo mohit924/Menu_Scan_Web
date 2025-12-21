@@ -29,6 +29,7 @@ class BottomCartContainer extends StatelessWidget {
               color: AppColors.LightGreyColor,
             ),
           ),
+          
           GestureDetector(
             onTap: onViewCart,
             child: Row(
