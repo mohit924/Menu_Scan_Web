@@ -4,7 +4,7 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="description" content="A new Flutter project.">
 
   <!-- Enable pinch zoom and scrolling on mobile -->
@@ -15,11 +15,11 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: auto;            /* allow scrolling */
-      touch-action: pan-x pan-y; /* allow touch gestures */
+      overflow: auto;             /* allow scrolling */
+      touch-action: pinch-zoom pan-x pan-y; /* enable pinch zoom + gestures */
     }
     #flt-glass-pane {
-      touch-action: pan-x pan-y; /* Flutter canvas scroll support */
+      touch-action: pinch-zoom pan-x pan-y; /* Flutter canvas zoom support */
     }
   </style>
 
@@ -29,6 +29,7 @@
   <meta name="apple-mobile-web-app-title" content="menu_scan_web">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
+  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
   <title>menu_scan_web</title>
   <link rel="manifest" href="manifest.json">

@@ -50,8 +50,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
 
-  // Enable scrolling and pinch zoom on mobile
-  html.document.body?.style.setProperty('touch-action', 'auto');
+  // Enable pinch zoom on mobile
+  html.document.body?.style.setProperty('touch-action', 'pinch-zoom');
 
   runApp(const MyApp(idFromQR: '2'));
 }
