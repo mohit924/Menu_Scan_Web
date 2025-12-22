@@ -24863,7 +24863,7 @@ case 2:q=document.body
 if(q!=null){q=q.style
 q.toString
 p=B.CY.a03(q,"touch-action")
-q.setProperty(p,"auto","")}if($.a3==null)A.ayH()
+q.setProperty(p,"pinch-zoom","")}if($.a3==null)A.ayH()
 q=$.a3
 q.toString
 p=$.aN().gd2().b
