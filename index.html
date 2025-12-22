@@ -20,6 +20,23 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
+  <!-- Enable pinch zoom and scrolling on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+
+  <style>
+    /* Ensure scrolling works and gestures are allowed */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: auto; /* allow scrolling */
+      touch-action: pan-x pan-y; /* allow touch gestures */
+    }
+    #flt-glass-pane {
+      touch-action: pan-x pan-y; /* Flutter canvas scroll support */
+    }
+  </style>
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
