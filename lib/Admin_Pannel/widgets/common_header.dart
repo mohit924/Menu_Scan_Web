@@ -124,13 +124,13 @@ class _CommonHeaderState extends State<CommonHeader> {
                       ),
                     );
                   }),
-                  const SizedBox(width: 24),
-                  _headerButton(context, "Contact", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ContactUsPage()),
-                    );
-                  }),
+                  // const SizedBox(width: 24),
+                  // _headerButton(context, "Contact", () {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(builder: (_) => const ContactUsPage()),
+                  //   );
+                  // }),
                 ],
 
                 const Spacer(),
