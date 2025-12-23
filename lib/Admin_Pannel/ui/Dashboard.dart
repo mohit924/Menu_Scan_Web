@@ -17,7 +17,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       "icon": Icons.fastfood,
       "expanded": true,
       "items": [
-        {"name": "Spring Rolls", "price": "₹100", "show": true},
+        {
+          "name": "Spring Rolls Rolls Rolls Rolls Rolls Rolls",
+          "price": "₹100",
+          "show": true,
+        },
         {"name": "Fried Momos", "price": "₹120", "show": true},
         {"name": "Paneer Pakora", "price": "₹150", "show": true},
         {"name": "Veg Cutlet", "price": "₹80", "show": true},
@@ -194,17 +198,11 @@ class _ItemCardState extends State<ItemCard> {
       decoration: BoxDecoration(
         color: AppColors.primaryBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
@@ -215,32 +213,42 @@ class _ItemCardState extends State<ItemCard> {
             ),
           ),
           const SizedBox(width: 12),
+
+          // Text + Switch
           Expanded(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.item["name"],
-                      style: const TextStyle(
-                        color: AppColors.whiteColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                // Text
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.item["name"],
+                        style: const TextStyle(
+                          color: AppColors.whiteColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.item["price"],
-                      style: const TextStyle(
-                        color: AppColors.OrangeColor,
-                        fontSize: 14,
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.item["price"],
+                        style: const TextStyle(
+                          color: AppColors.OrangeColor,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+
+                // Switch
                 Switch(
                   value: widget.item["show"],
                   activeColor: AppColors.OrangeColor,

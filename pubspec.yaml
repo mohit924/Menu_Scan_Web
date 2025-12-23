@@ -41,6 +41,7 @@ dependencies:
   http: ^1.5.0
   image_picker: ^1.2.1
   translator: ^1.0.4+1
+  flutter_switch: ^0.3.2
   
 
 dev_dependencies:

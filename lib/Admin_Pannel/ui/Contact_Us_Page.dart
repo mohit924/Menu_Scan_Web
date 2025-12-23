@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:menu_scan_web/Admin_Pannel/ui/Dashboard.dart';
 import 'package:menu_scan_web/Admin_Pannel/widgets/common_header.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
 
@@ -13,6 +15,49 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String hotelID = "OPSY"; // Static hotel ID
+
+  void submitMessage() async {
+    final name = _nameController.text.trim();
+    final contact = _contactController.text.trim();
+    final message = _messageController.text.trim();
+
+    if (name.isEmpty || contact.isEmpty || message.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      return;
+    }
+
+    try {
+      await _firestore.collection('ContactUs').add({
+        'name': name,
+        'contact': contact,
+        'message': message,
+        'hotelID': hotelID,
+        'createdAt': Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Message sent successfully!")),
+      );
+
+      _nameController.clear();
+      _contactController.clear();
+      _messageController.clear();
+
+      // Navigate to Admin Dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error sending message: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +68,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-
-          // Common Header
           const CommonHeader(showSearchBar: false),
-
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -56,8 +98,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // Name TextField
                       TextField(
                         controller: _nameController,
                         style: const TextStyle(color: AppColors.whiteColor),
@@ -68,9 +108,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.LightGreyColor,
-                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -81,8 +118,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Contact Number TextField
                       TextField(
                         controller: _contactController,
                         keyboardType: TextInputType.phone,
@@ -94,9 +129,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.LightGreyColor,
-                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -107,8 +139,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Message TextField
                       TextField(
                         controller: _messageController,
                         maxLines: 4,
@@ -120,9 +150,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.LightGreyColor,
-                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -133,8 +160,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // Submit Button
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -145,38 +170,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: () {
-                            // Here you can handle form submission
-                            final name = _nameController.text;
-                            final contact = _contactController.text;
-                            final message = _messageController.text;
-
-                            if (name.isNotEmpty &&
-                                contact.isNotEmpty &&
-                                message.isNotEmpty) {
-                              // For now just show a dialog
-                              showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  title: const Text("Message Sent"),
-                                  content: Text(
-                                    "Name: $name\nContact: $contact\nMessage: $message",
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text("OK"),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              // Clear fields
-                              _nameController.clear();
-                              _contactController.clear();
-                              _messageController.clear();
-                            }
-                          },
+                          onPressed: submitMessage,
                           child: const Text(
                             "Submit",
                             style: TextStyle(

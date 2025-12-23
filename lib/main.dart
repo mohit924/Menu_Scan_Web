@@ -36,7 +36,6 @@
 //     );
 //   }
 // }
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -48,16 +47,9 @@ import 'package:menu_scan_web/Customer/Screen_Ui/Menu_screen.dart';
 import 'package:menu_scan_web/firebase_options.dart';
 import 'dart:html' as html;
 
-import 'dart:html' as html;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
-
-  // ✅ Enable pinch zoom on mobile
-  html.document.body?.style.setProperty('touch-action', 'pinch-zoom');
-
-  // 🔒 BLOCK browser back button (GLOBAL)
   html.window.history.pushState(null, '', html.window.location.href);
   html.window.onPopState.listen((event) {
     html.window.history.pushState(null, '', html.window.location.href);
@@ -68,56 +60,16 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final String idFromQR;
+
   const MyApp({required this.idFromQR, super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Name Collector',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginPage(),
-
-      builder: (context, child) {
-        return ScrollConfiguration(
-          behavior: const MaterialScrollBehavior().copyWith(
-            dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return InteractiveViewer(
-                panEnabled: true,
-                scaleEnabled: true,
-                minScale: 1.0,
-                maxScale: 5.0,
-                constrained: false,
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  child: child!,
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-class ZoomableAppWrapper extends StatelessWidget {
-  final Widget child;
-
-  const ZoomableAppWrapper({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return InteractiveViewer(
-      panEnabled: true,
-      scaleEnabled: true,
-      minScale: 1.0,
-      maxScale: 5.0,
-      child: child,
+      debugShowCheckedModeBanner: false,
+      home: LoginPage(),
     );
   }
 }

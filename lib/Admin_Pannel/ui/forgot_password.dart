@@ -1,4 +1,6 @@
+// forgot_password.dart
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/reset_password.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
 
@@ -11,6 +13,43 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController _phoneController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void verifyPhone() async {
+    final phone = _phoneController.text.trim();
+
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter phone number")),
+      );
+      return;
+    }
+
+    try {
+      final querySnapshot = await _firestore
+          .collection('AdminSignUp')
+          .where('phone', isEqualTo: phone)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Navigate to ResetPasswordPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResetPasswordPage(phoneNumber: phone),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Phone number not registered")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +99,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -83,17 +119,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          // Navigate to ResetPasswordPage
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ResetPasswordPage(
-                                phoneNumber: _phoneController.text,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: verifyPhone,
                         child: const Text(
                           "Confirm Phone Number",
                           style: TextStyle(

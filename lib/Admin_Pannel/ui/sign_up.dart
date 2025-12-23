@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:menu_scan_web/Admin_Pannel/ui/login.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
+import 'dart:math';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -9,16 +12,98 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final TextEditingController _hotelNameController = TextEditingController(
-    text: "My Hotel",
-  ); // optional pre-fill
-  final TextEditingController _phoneController = TextEditingController(
-    text: "9876543210",
-  ); // optional pre-fill
-  final TextEditingController _passwordController = TextEditingController(
-    text: "123456",
-  ); // optional pre-fill
+  final TextEditingController _hotelNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Generate random 4-letter ID
+  String _generateRandomID() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    final rand = Random();
+    return List.generate(
+      4,
+      (index) => chars[rand.nextInt(chars.length)],
+    ).join();
+  }
+
+  // Generate unique hotel ID
+  Future<String> _generateUniqueHotelID() async {
+    String newID = '';
+    bool exists = true;
+
+    while (exists) {
+      newID = _generateRandomID();
+      final query = await _firestore
+          .collection('AdminSignUp')
+          .where('hotelID', isEqualTo: newID)
+          .get();
+      exists = query.docs.isNotEmpty;
+    }
+
+    return newID;
+  }
+
+  void signUp() async {
+    final hotelName = _hotelNameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text.trim();
+    final createdAt = DateTime.now();
+
+    if (hotelName.isEmpty || phone.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      return;
+    }
+
+    try {
+      // Check if phone already exists
+      final phoneQuery = await _firestore
+          .collection('AdminSignUp')
+          .where('phone', isEqualTo: phone)
+          .get();
+
+      if (phoneQuery.docs.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Phone number already registered!")),
+        );
+        return;
+      }
+
+      // Generate unique hotel ID
+      final hotelID = await _generateUniqueHotelID();
+
+      // Add new admin
+      await _firestore.collection('AdminSignUp').add({
+        'hotelName': hotelName,
+        'phone': phone,
+        'password': password,
+        'hotelID': hotelID,
+        'date': createdAt,
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Sign up successful!")));
+
+      // Clear fields
+      _hotelNameController.clear();
+      _phoneController.clear();
+      _passwordController.clear();
+
+      // Navigate to LoginPage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,27 +112,17 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
           Positioned.fill(
             child: Image.asset("assets/pre_login_bg.png", fit: BoxFit.cover),
           ),
           Center(
             child: SingleChildScrollView(
               child: Container(
-                width: screenWidth > 600
-                    ? 400
-                    : screenWidth * 0.9, // responsive width
+                width: screenWidth > 600 ? 400 : screenWidth * 0.9,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: AppColors.whiteColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -61,7 +136,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Hotel Name
                     TextField(
                       controller: _hotelNameController,
                       decoration: InputDecoration(
@@ -71,9 +145,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -84,7 +155,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Phone Number
                     TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
@@ -95,9 +165,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -108,7 +175,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Password
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
@@ -119,9 +185,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -155,9 +218,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          // Handle signup logic
-                        },
+                        onPressed: signUp,
                         child: const Text(
                           "Sign Up",
                           style: TextStyle(
@@ -171,7 +232,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // go back to login
+                        Navigator.pop(context);
                       },
                       child: const Text(
                         "Already have an account? Login",

@@ -107,7 +107,7 @@ class HeaderMenuButtons extends StatelessWidget {
         const SizedBox(width: 24),
         _headerButton(context, "Items", const ItemListPage(categoryIndex: 0)),
         const SizedBox(width: 24),
-        _headerButton(context, "Contact", const ContactUsPage()),
+        _headerButton(context, "Enquirey", const ContactUsPage()),
       ],
     );
   }

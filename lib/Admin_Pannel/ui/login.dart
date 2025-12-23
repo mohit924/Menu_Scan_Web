@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Dashboard.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/forgot_password.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/sign_up.dart';
@@ -12,13 +13,53 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _mobileController = TextEditingController(
-    text: "9876543210",
-  ); // pre-filled for mobile
-  final TextEditingController _passwordController = TextEditingController(
-    text: "123456",
-  ); // pre-filled password
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void login() async {
+    final mobile = _mobileController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (mobile.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter mobile and password")),
+      );
+      return;
+    }
+
+    try {
+      // Query Firestore for matching mobile and password
+      final querySnapshot = await _firestore
+          .collection('AdminSignUp')
+          .where('phone', isEqualTo: mobile)
+          .where('password', isEqualTo: password)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Successful login
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Login successful!")));
+
+        // Navigate to dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
+        );
+      } else {
+        // Invalid credentials
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid mobile number or password")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +72,10 @@ class _LoginPageState extends State<LoginPage> {
           Positioned.fill(
             child: Image.asset("assets/pre_login_bg.png", fit: BoxFit.cover),
           ),
-
-          // Scrollable container for small screens
           Center(
             child: SingleChildScrollView(
               child: Container(
-                width: screenWidth > 600
-                    ? 400
-                    : screenWidth * 0.9, // responsive width
+                width: screenWidth > 600 ? 400 : screenWidth * 0.9,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: AppColors.whiteColor,
@@ -54,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       "Admin Login",
                       style: TextStyle(
                         color: AppColors.primaryBackground,
@@ -74,9 +111,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -98,9 +132,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.LightGreyColor,
-                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -152,14 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AdminDashboardPage(),
-                            ),
-                          );
-                        },
+                        onPressed: login,
                         child: const Text(
                           "Login",
                           style: TextStyle(
