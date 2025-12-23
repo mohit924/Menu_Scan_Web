@@ -48,37 +48,57 @@ import 'package:menu_scan_web/Customer/Screen_Ui/Menu_screen.dart';
 import 'package:menu_scan_web/firebase_options.dart';
 import 'dart:html' as html;
 
+import 'dart:html' as html;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
 
-  // Enable pinch zoom on mobile
+  // ✅ Enable pinch zoom on mobile
   html.document.body?.style.setProperty('touch-action', 'pinch-zoom');
+
+  // 🔒 BLOCK browser back button (GLOBAL)
+  html.window.history.pushState(null, '', html.window.location.href);
+  html.window.onPopState.listen((event) {
+    html.window.history.pushState(null, '', html.window.location.href);
+  });
 
   runApp(const MyApp(idFromQR: '2'));
 }
 
 class MyApp extends StatelessWidget {
   final String idFromQR;
-
   const MyApp({required this.idFromQR, super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Name Collector',
       theme: ThemeData(primarySwatch: Colors.blue),
-      debugShowCheckedModeBanner: false,
-      home: ZoomableAppWrapper(
-        child: LoginPage(), // your initial screen
-      ),
+      home: const LoginPage(),
+
       builder: (context, child) {
-        // Allow scroll gestures on mobile and mouse
         return ScrollConfiguration(
           behavior: const MaterialScrollBehavior().copyWith(
             dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
           ),
-          child: child!,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return InteractiveViewer(
+                panEnabled: true,
+                scaleEnabled: true,
+                minScale: 1.0,
+                maxScale: 5.0,
+                constrained: false,
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: child!,
+                ),
+              );
+            },
+          ),
         );
       },
     );
