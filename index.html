@@ -7,23 +7,31 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="description" content="A new Flutter project.">
 
-  <!-- Enable pinch zoom and scrolling on mobile -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <!-- Enable pinch zoom -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 
   <style>
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: auto;             /* allow scrolling */
-      touch-action: pinch-zoom pan-x pan-y; /* enable pinch zoom + gestures */
+
+      /* ❌ Disable browser scroll & refresh */
+      overflow: hidden;
+      overscroll-behavior: none;
+
+      /* ✅ Allow pinch zoom only */
+      touch-action: pinch-zoom;
     }
+
+    /* Flutter canvas */
     #flt-glass-pane {
-      touch-action: pinch-zoom pan-x pan-y; /* Flutter canvas zoom support */
+      touch-action: pinch-zoom;
     }
   </style>
 
-  <!-- iOS meta tags & icons -->
+  <!-- iOS meta tags -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="menu_scan_web">
@@ -34,6 +42,7 @@
   <title>menu_scan_web</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
