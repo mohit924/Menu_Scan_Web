@@ -118,9 +118,9 @@ class _AddItemPageState extends State<AddItemPage> {
 
       // 3️⃣ Upload image to Firebase Storage (Web)
       debugPrint("3️⃣ UPLOADING IMAGE TO FIREBASE STORAGE...");
-      final storageRef = FirebaseStorage.instance.ref().child(
-        'items/$newItemID.jpg',
-      );
+      final storageRef = FirebaseStorage.instanceFor(
+        bucket: 'gs://menu-scan-web.firebasestorage.app',
+      ).ref().child('items/$newItemID.jpg');
 
       try {
         debugPrint("🔹 Creating UploadTask...");
