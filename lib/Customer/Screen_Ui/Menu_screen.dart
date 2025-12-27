@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
 import 'package:menu_scan_web/Custom/BottomCartContainer.dart';
 import 'package:menu_scan_web/Custom/Custom_Button.dart';
@@ -23,59 +24,101 @@ class _MenuScreenState extends State<MenuScreen> {
   final ScrollController _scrollController = ScrollController();
   bool get isSearching => _searchController.text.isNotEmpty;
 
-  // Hardcoded categories and menu items
-  final List<String> categories = ["Starters", "Main Course", "Desserts"];
-  late List<Map<String, dynamic>> menuItems;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  List<Map<String, dynamic>> filteredItems = [];
-
+  List<Map<String, dynamic>> categories = [];
   Map<int, Map<String, dynamic>> buttonStates = {};
   Map<String, bool> expandedCategories = {};
   Map<String, GlobalKey> categoryKeys = {};
-
-  //  @override
-  //   Widget build(BuildContext context) {
-  // int totalCount = buttonStates.values.fold(
-  //   0,
-  //   (int sum, state) => sum + (state["count"] as int),
-  // );
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    fetchCategoriesAndItems();
+  }
 
-    // Hardcoded menu items
-    menuItems = List.generate(10, (index) {
-      return {
-        "id": index,
-        "name": "Menu ${index + 1}",
-        "price": "₹${(index + 1) * 50}",
-        "image": "assets/noodles.png",
-        "description":
-            "This is the description for Menu ${index + 1}. Delicious and fresh!",
-        "category": categories[index % categories.length],
-      };
-    });
+  Future<void> fetchCategoriesAndItems() async {
+    try {
+      final categorySnapshot = await _firestore
+          .collection('AddCategory')
+          .where('hotelID', isEqualTo: widget.hotelID)
+          .get();
 
-    filteredItems = List.from(menuItems);
+      List<Map<String, dynamic>> tempCategories = [];
 
-    for (var item in menuItems) {
-      buttonStates[item["id"]] = {"isCompleted": false, "count": 0};
+      for (var catDoc in categorySnapshot.docs) {
+        final catData = catDoc.data();
+        final catID = catData['categoryID'];
+
+        final itemSnapshot = await _firestore
+            .collection('AddItem')
+            .where('hotelID', isEqualTo: widget.hotelID)
+            .where('categoryID', isEqualTo: catID)
+            .get();
+
+        List<Map<String, dynamic>> items = itemSnapshot.docs.map((itemDoc) {
+          final itemData = itemDoc.data();
+          final id = itemData['itemID'] as int;
+
+          // Initialize button state
+          buttonStates[id] = {"isCompleted": false, "count": 0};
+
+          return {
+            "id": id,
+            "name": itemData['itemName'] ?? '',
+            "price": "₹${itemData['price'] ?? ''}",
+            "description": itemData['description'] ?? '',
+            "image": itemData['imageUrl'] ?? '',
+            "category": catData['categoryName'] ?? '',
+          };
+        }).toList();
+
+        tempCategories.add({
+          "name": catData['categoryName'] ?? '',
+          "expanded": true,
+          "items": items,
+        });
+      }
+
+      setState(() {
+        categories = tempCategories;
+
+        // Setup expanded states and keys
+        for (var cat in categories) {
+          final name = cat['name'];
+          expandedCategories[name] = true;
+          categoryKeys[name] = GlobalKey();
+        }
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
+  }
 
-    for (var cat in categories) {
-      expandedCategories[cat] = true; // default expanded
-      categoryKeys[cat] = GlobalKey(); // assign key
-    }
+  List<Map<String, dynamic>> get filteredCategories {
+    if (_searchQuery.isEmpty) return categories;
+
+    return categories
+        .map((category) {
+          final filteredItems = (category["items"] as List)
+              .where(
+                (item) => item["name"].toString().toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              )
+              .toList();
+          return {...category, "items": filteredItems};
+        })
+        .where((cat) => (cat["items"] as List).isNotEmpty)
+        .toList();
   }
 
   void _filterMenu(String query) {
     setState(() {
-      filteredItems = menuItems
-          .where(
-            (item) => item["name"].toLowerCase().contains(query.toLowerCase()),
-          )
-          .toList();
+      _searchQuery = query;
     });
   }
 
@@ -88,7 +131,6 @@ class _MenuScreenState extends State<MenuScreen> {
         item: item,
         onAdd: (count) {
           final id = item["id"];
-
           setState(() {
             buttonStates[id]!["isCompleted"] = true;
             buttonStates[id]!["count"] = count;
@@ -106,12 +148,10 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _scrollToCategory(String category) {
-    // Expand the target category
     setState(() {
       expandedCategories.updateAll((key, value) => key == category);
     });
 
-    // Wait for crossfade animation to complete
     Future.delayed(const Duration(milliseconds: 310), () {
       final key = categoryKeys[category];
       if (key != null && key.currentContext != null) {
@@ -122,7 +162,6 @@ class _MenuScreenState extends State<MenuScreen> {
           alignment: 0.0,
         );
       } else {
-        // Retry if widget still not rendered
         Future.delayed(const Duration(milliseconds: 20), () {
           _scrollToCategory(category);
         });
@@ -134,45 +173,21 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     int totalCount = buttonStates.values.fold(
       0,
-      (int sum, state) => sum + (state["count"] as int),
+      (sum, state) => sum + (state["count"] as int),
     );
 
-    // Group menu items by category
-    final Map<String, List<Map<String, dynamic>>> groupedItems = {};
-    for (var item in filteredItems) {
-      final cat = item["category"];
-      groupedItems.putIfAbsent(cat, () => []);
-      groupedItems[cat]!.add(item);
+    final groupedItems = <String, List<Map<String, dynamic>>>{};
+    for (var cat in filteredCategories) {
+      final catName = cat["name"];
+      groupedItems[catName] = List<Map<String, dynamic>>.from(cat["items"]);
     }
 
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              "The Wood",
-              style: const TextStyle(
-                color: AppColors.whiteColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            // Display hotelID and tableID
-            Text(
-              "Hotel ID: ${widget.hotelID} | Table ID: ${widget.tableID}",
-              style: const TextStyle(
-                color: AppColors.OrangeColor,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        title: const Text(
+          "Menu",
+          style: TextStyle(color: AppColors.whiteColor, fontSize: 16),
         ),
         centerTitle: true,
         backgroundColor: AppColors.primaryBackground,
@@ -181,32 +196,15 @@ class _MenuScreenState extends State<MenuScreen> {
           IconButton(
             icon: const Icon(Icons.menu, color: AppColors.whiteColor),
             onPressed: () {
-              CategoryBottomSheet.show(context, categories, _scrollToCategory);
+              CategoryBottomSheet.show(
+                context,
+                groupedItems.keys.toList(),
+                _scrollToCategory,
+              );
             },
           ),
         ],
       ),
-
-      // AppBar(
-      //   title: Text(
-      //     "The Wood ",
-      //     style: const TextStyle(color: AppColors.whiteColor, fontSize: 16),
-      //     maxLines: 2,
-      //     overflow: TextOverflow.ellipsis,
-      //     textAlign: TextAlign.center,
-      //   ),
-      //   centerTitle: true,
-      //   backgroundColor: AppColors.primaryBackground,
-      //   elevation: 2,
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.menu, color: AppColors.whiteColor),
-      //       onPressed: () {
-      //         CategoryBottomSheet.show(context, categories, _scrollToCategory);
-      //       },
-      //     ),
-      //   ],
-      // ),
       body: Stack(
         children: [
           Column(
@@ -218,27 +216,8 @@ class _MenuScreenState extends State<MenuScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(10),
-                  child: isSearching && groupedItems.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.search_off,
-                                size: 48,
-                                color: AppColors.LightGreyColor,
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                "No search results found",
-                                style: TextStyle(
-                                  color: AppColors.LightGreyColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                  child: groupedItems.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
                       : ListView(
                           controller: _scrollController,
                           padding: EdgeInsets.only(
@@ -333,17 +312,20 @@ class _MenuScreenState extends State<MenuScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Expanded(
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
+                                                    child: item["image"] == ''
+                                                        ? Container(
+                                                            color: Colors
+                                                                .grey[300],
+                                                            child: const Icon(
+                                                              Icons.image,
+                                                            ),
+                                                          )
+                                                        : Image.network(
+                                                            item["image"],
+                                                            fit: BoxFit.cover,
+                                                            width:
+                                                                double.infinity,
                                                           ),
-                                                      child: Image.asset(
-                                                        item["image"],
-                                                        fit: BoxFit.cover,
-                                                        width: double.infinity,
-                                                      ),
-                                                    ),
                                                   ),
                                                   const SizedBox(height: 8),
                                                   Text(
