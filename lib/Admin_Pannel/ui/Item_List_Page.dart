@@ -148,6 +148,8 @@ class _ItemListPageState extends State<ItemListPage> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
 

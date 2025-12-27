@@ -41,9 +41,9 @@ class MyApp extends StatelessWidget {
     } else if (hotelID != null && tableID != null) {
       home = MenuScreen(hotelID: hotelID!, tableID: tableID!);
     } else {
-      home = MenuScreen(hotelID: "UFKH", tableID: "2");
+      // home = MenuScreen(hotelID: "UFKH", tableID: "2");
 
-      // home = const LoginPage();
+      home = const LoginPage();
     }
 
     return MaterialApp(

@@ -139,6 +139,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               PopupMenuButton(

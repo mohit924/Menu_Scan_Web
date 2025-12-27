@@ -181,12 +181,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                     color: AppColors.OrangeColor,
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    category["name"],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.LightGreyColor,
+                                  // Wrap Text in Expanded so maxLines works
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                        0.6, // adjust as needed
+                                    child: Text(
+                                      category["name"],
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.LightGreyColor,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -201,6 +209,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             ],
                           ),
                         ),
+
                         const SizedBox(height: 12),
                         if (category["expanded"] as bool)
                           LayoutBuilder(
