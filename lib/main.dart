@@ -37,14 +37,13 @@ class MyApp extends StatelessWidget {
     Widget home;
 
     if (savedHotelID != null && savedHotelID!.isNotEmpty) {
-      // Admin is already logged in
       home = AdminDashboardPage();
     } else if (hotelID != null && tableID != null) {
-      // Customer QR
       home = MenuScreen(hotelID: hotelID!, tableID: tableID!);
     } else {
-      // Not logged in
-      home = const LoginPage();
+      home = MenuScreen(hotelID: "UFKH", tableID: "2");
+
+      // home = const LoginPage();
     }
 
     return MaterialApp(

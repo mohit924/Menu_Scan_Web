@@ -1,3 +1,4 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
@@ -38,6 +39,20 @@ class _MenuScreenState extends State<MenuScreen> {
     fetchCategoriesAndItems();
   }
 
+  Future<String?> _getImageUrl(String path) async {
+    if (path.isEmpty) return null;
+
+    try {
+      final storage = FirebaseStorage.instanceFor(
+        bucket: 'gs://menu-scan-web.firebasestorage.app',
+      );
+      return await storage.ref(path).getDownloadURL();
+    } catch (e) {
+      debugPrint("Image load failed: $e");
+      return null;
+    }
+  }
+
   Future<void> fetchCategoriesAndItems() async {
     try {
       final categorySnapshot = await _firestore
@@ -61,7 +76,6 @@ class _MenuScreenState extends State<MenuScreen> {
           final itemData = itemDoc.data();
           final id = itemData['itemID'] as int;
 
-          // Initialize button state
           buttonStates[id] = {"isCompleted": false, "count": 0};
 
           return {
@@ -74,17 +88,19 @@ class _MenuScreenState extends State<MenuScreen> {
           };
         }).toList();
 
-        tempCategories.add({
-          "name": catData['categoryName'] ?? '',
-          "expanded": true,
-          "items": items,
-        });
+        // Only add categories that have items
+        if (items.isNotEmpty) {
+          tempCategories.add({
+            "name": catData['categoryName'] ?? '',
+            "expanded": true,
+            "items": items,
+          });
+        }
       }
 
       setState(() {
         categories = tempCategories;
 
-        // Setup expanded states and keys
         for (var cat in categories) {
           final name = cat['name'];
           expandedCategories[name] = true;
@@ -122,13 +138,14 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  void _showMenuBottomSheet(Map<String, dynamic> item) {
+  void _showMenuBottomSheet(Map<String, dynamic> item, String? imageUrl) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => MenuBottomSheet(
         item: item,
+        imageUrl: imageUrl,
         onAdd: (count) {
           final id = item["id"];
           setState(() {
@@ -288,93 +305,126 @@ class _MenuScreenState extends State<MenuScreen> {
                                             crossAxisCount: 2,
                                             crossAxisSpacing: 10,
                                             mainAxisSpacing: 10,
-                                            childAspectRatio: 0.7,
+                                            childAspectRatio: 0.9,
                                           ),
                                       itemBuilder: (context, index) {
                                         final item = items[index];
                                         final id = item["id"];
                                         final state = buttonStates[id]!;
 
-                                        return GestureDetector(
-                                          onTap: () =>
-                                              _showMenuBottomSheet(item),
-                                          child: Card(
-                                            color: AppColors.primaryBackground,
-                                            elevation: 3,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Expanded(
-                                                    child: item["image"] == ''
-                                                        ? Container(
-                                                            color: Colors
-                                                                .grey[300],
-                                                            child: const Icon(
-                                                              Icons.image,
-                                                            ),
-                                                          )
-                                                        : Image.network(
-                                                            item["image"],
-                                                            fit: BoxFit.cover,
-                                                            width:
-                                                                double.infinity,
-                                                          ),
+                                        return FutureBuilder<String?>(
+                                          future: _getImageUrl(item["image"]),
+                                          builder: (context, snapshot) {
+                                            final imageUrl = snapshot
+                                                .data; // ✅ store resolved URL
+
+                                            return GestureDetector(
+                                              onTap: () => _showMenuBottomSheet(
+                                                item,
+                                                imageUrl,
+                                              ), // pass URL here
+                                              child: Card(
+                                                color:
+                                                    AppColors.primaryBackground,
+                                                elevation: 3,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
                                                   ),
-                                                  const SizedBox(height: 8),
-                                                  Text(
-                                                    item["name"],
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: AppColors
-                                                          .LightGreyColor,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
+                                                      Container(
+                                                        height: 120,
+                                                        child:
+                                                            snapshot.connectionState ==
+                                                                ConnectionState
+                                                                    .waiting
+                                                            ? Container(
+                                                                color: Colors
+                                                                    .grey[300],
+                                                              )
+                                                            : snapshot.hasError ||
+                                                                  snapshot.data ==
+                                                                      null
+                                                            ? Container(
+                                                                color: Colors
+                                                                    .grey[300],
+                                                                child:
+                                                                    const Icon(
+                                                                      Icons
+                                                                          .image,
+                                                                    ),
+                                                              )
+                                                            : Image.network(
+                                                                snapshot.data!,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                width: double
+                                                                    .infinity,
+                                                              ),
+                                                      ),
+                                                      const SizedBox(height: 8),
                                                       Text(
-                                                        item["price"],
+                                                        item["name"],
                                                         style: const TextStyle(
-                                                          color: AppColors
-                                                              .OrangeColor,
+                                                          fontSize: 16,
                                                           fontWeight:
                                                               FontWeight.bold,
+                                                          color: AppColors
+                                                              .LightGreyColor,
                                                         ),
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                      ToggleAddButton(
-                                                        isCompleted:
-                                                            state["isCompleted"],
-                                                        count: state["count"],
-                                                        onChanged:
-                                                            (
-                                                              newCompleted,
-                                                              newCount,
-                                                            ) {
-                                                              _updateButtonState(
-                                                                id,
-                                                                newCompleted,
-                                                                newCount,
-                                                              );
-                                                            },
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            item["price"],
+                                                            style: const TextStyle(
+                                                              color: AppColors
+                                                                  .OrangeColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                          ToggleAddButton(
+                                                            isCompleted:
+                                                                state["isCompleted"],
+                                                            count:
+                                                                state["count"],
+                                                            onChanged:
+                                                                (
+                                                                  newCompleted,
+                                                                  newCount,
+                                                                ) {
+                                                                  _updateButtonState(
+                                                                    id,
+                                                                    newCompleted,
+                                                                    newCount,
+                                                                  );
+                                                                },
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
-                                                ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
+                                            );
+                                          },
                                         );
                                       },
                                     ),

@@ -1,12 +1,18 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
 
 class MenuBottomSheet extends StatefulWidget {
   final Map<String, dynamic> item;
   final Function(int count) onAdd;
+  final String? imageUrl;
 
-  const MenuBottomSheet({Key? key, required this.item, required this.onAdd})
-    : super(key: key);
+  const MenuBottomSheet({
+    Key? key,
+    required this.item,
+    required this.onAdd,
+    this.imageUrl,
+  }) : super(key: key);
 
   @override
   State<MenuBottomSheet> createState() => _MenuBottomSheetState();
@@ -18,6 +24,18 @@ class _MenuBottomSheetState extends State<MenuBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
+    Future<String?> _getImageUrl(String path) async {
+      if (path.isEmpty) return null;
+      try {
+        final storage = FirebaseStorage.instanceFor(
+          bucket: 'gs://menu-scan-web.firebasestorage.app',
+        );
+        return await storage.ref(path).getDownloadURL();
+      } catch (e) {
+        debugPrint("Image load failed: $e");
+        return null;
+      }
+    }
 
     return Container(
       height: height * 0.6,
@@ -39,12 +57,18 @@ class _MenuBottomSheetState extends State<MenuBottomSheet> {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),
-                    child: Image.asset(
-                      widget.item["image"],
-                      fit: BoxFit.contain,
-                      height: height * 0.3,
-                      width: double.infinity,
-                    ),
+                    child: widget.imageUrl != null
+                        ? Image.network(
+                            widget.imageUrl!,
+                            fit: BoxFit.contain,
+                            height: height * 0.3,
+                            width: double.infinity,
+                          )
+                        : Container(
+                            height: height * 0.3,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.image, size: 50),
+                          ),
                   ),
 
                   const SizedBox(height: 16),
