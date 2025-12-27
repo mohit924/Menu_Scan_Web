@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Category_List_Page.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Contact_Us_Page.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Dashboard.dart';
+import 'package:menu_scan_web/Admin_Pannel/ui/Generate_Qr.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Item_List_Page.dart';
 import 'package:menu_scan_web/Admin_Pannel/ui/Update_Profile_Page.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
@@ -12,6 +13,7 @@ class CommonHeader extends StatefulWidget {
   final double maxWidth;
   final bool showSearchBar;
   final ValueChanged<String>? onSearchChanged;
+  final String currentPage; // NEW: current active page
 
   const CommonHeader({
     Key? key,
@@ -20,6 +22,7 @@ class CommonHeader extends StatefulWidget {
     this.maxWidth = 1200,
     this.showSearchBar = false,
     this.onSearchChanged,
+    required this.currentPage, // require current page
   }) : super(key: key);
 
   @override
@@ -46,19 +49,10 @@ class _CommonHeaderState extends State<CommonHeader> {
           child: Row(
             children: [
               const SizedBox(width: 12),
-
-              // Menu icon — show only on mobile
-              if (!isDesktop) const MobileMenuButton(),
-
+              if (!isDesktop) MobileMenuButton(currentPage: widget.currentPage),
               const SizedBox(width: 12),
-
-              // Desktop menu buttons
-              if (isDesktop) const HeaderMenuButtons(),
-
-              // Spacer before search field (desktop keeps menu buttons left)
+              if (isDesktop) HeaderMenuButtons(currentPage: widget.currentPage),
               if (isDesktop) const Spacer(),
-
-              // Search Field
               Expanded(
                 child: Padding(
                   padding: isDesktop
@@ -74,7 +68,6 @@ class _CommonHeaderState extends State<CommonHeader> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 16),
               const ProfileAvatar(),
               const SizedBox(width: 12),
@@ -86,10 +79,10 @@ class _CommonHeaderState extends State<CommonHeader> {
   }
 }
 
-// ------------------- Separate Widgets -------------------
-
+// ------------------- Desktop Menu -------------------
 class HeaderMenuButtons extends StatelessWidget {
-  const HeaderMenuButtons({super.key});
+  final String currentPage;
+  const HeaderMenuButtons({super.key, required this.currentPage});
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +94,9 @@ class HeaderMenuButtons extends StatelessWidget {
         const SizedBox(width: 24),
         _headerButton(context, "Items", const ItemListPage()),
         const SizedBox(width: 24),
-        _headerButton(context, "Enquirey", const ContactUsPage()),
+        _headerButton(context, "Generate Qr", const GenerateQr()),
+        const SizedBox(width: 24),
+        _headerButton(context, "Contact Us", const ContactUsPage()),
         const SizedBox(width: 24),
         _headerButton(context, "Help", const ContactUsPage()),
       ],
@@ -109,13 +104,14 @@ class HeaderMenuButtons extends StatelessWidget {
   }
 
   Widget _headerButton(BuildContext context, String text, Widget page) {
+    final isActive = text == currentPage;
     return InkWell(
       onTap: () =>
           Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Text(
         text,
-        style: const TextStyle(
-          color: AppColors.whiteColor,
+        style: TextStyle(
+          color: isActive ? AppColors.OrangeColor : AppColors.whiteColor,
           fontSize: 15,
           fontWeight: FontWeight.bold,
         ),
@@ -124,8 +120,10 @@ class HeaderMenuButtons extends StatelessWidget {
   }
 }
 
+// ------------------- Mobile Bottom Sheet -------------------
 class MobileMenuButton extends StatelessWidget {
-  const MobileMenuButton({super.key});
+  final String currentPage;
+  const MobileMenuButton({super.key, required this.currentPage});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +141,9 @@ class MobileMenuButton extends StatelessWidget {
             _bottomSheetItem(context, "Dashboard", const AdminDashboardPage()),
             _bottomSheetItem(context, "Category", const CategoryListPage()),
             _bottomSheetItem(context, "Items", const ItemListPage()),
+            _bottomSheetItem(context, "Generate Qr", const GenerateQr()),
             _bottomSheetItem(context, "Contact", const ContactUsPage()),
+            _bottomSheetItem(context, "Help", const ContactUsPage()),
             const SizedBox(height: 12),
           ],
         ),
@@ -152,11 +152,12 @@ class MobileMenuButton extends StatelessWidget {
   }
 
   Widget _bottomSheetItem(BuildContext context, String title, Widget page) {
+    final isActive = title == currentPage;
     return ListTile(
       title: Text(
         title,
-        style: const TextStyle(
-          color: AppColors.whiteColor,
+        style: TextStyle(
+          color: isActive ? AppColors.OrangeColor : AppColors.whiteColor,
           fontWeight: FontWeight.bold,
           fontSize: 16,
         ),

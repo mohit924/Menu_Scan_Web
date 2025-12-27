@@ -117,6 +117,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         children: [
           const SizedBox(height: 25),
           CommonHeader(
+            currentPage: "Dashboard",
             showSearchBar: true,
             onSearchChanged: (val) {
               setState(() {

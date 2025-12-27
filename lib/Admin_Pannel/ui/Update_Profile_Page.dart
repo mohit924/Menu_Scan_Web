@@ -100,7 +100,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-          const CommonHeader(showSearchBar: false),
+          const CommonHeader(showSearchBar: false, currentPage: ""),
           Expanded(
             child: Center(
               child: SingleChildScrollView(

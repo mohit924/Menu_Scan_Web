@@ -156,7 +156,9 @@ class _AddItemPageState extends State<AddItemPage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-          const CommonHeader(showSearchBar: false),
+          const CommonHeader(showSearchBar: false, currentPage: "Items"),
+          const SizedBox(height: 25),
+
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -309,15 +311,45 @@ class _AddItemPageState extends State<AddItemPage> {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: addItem,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.OrangeColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          onPressed: addItem,
                           child: const Text(
                             "Add Item",
                             style: TextStyle(
+                              fontSize: 16,
                               color: AppColors.whiteColor,
                               fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: AppColors.OrangeColor,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            "View Items",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.OrangeColor,
                             ),
                           ),
                         ),

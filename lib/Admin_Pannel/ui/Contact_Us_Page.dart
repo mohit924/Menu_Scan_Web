@@ -68,7 +68,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-          const CommonHeader(showSearchBar: false),
+          const CommonHeader(showSearchBar: false, currentPage: "Contact Us"),
           Expanded(
             child: Center(
               child: SingleChildScrollView(

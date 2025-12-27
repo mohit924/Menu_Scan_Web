@@ -7,21 +7,6 @@ import 'package:menu_scan_web/Admin_Pannel/ui/Item_List_Page.dart';
 import 'package:menu_scan_web/Admin_Pannel/widgets/common_header.dart';
 import 'package:menu_scan_web/Custom/App_colors.dart';
 
-// Dummy data
-List<Map<String, dynamic>> categories = [
-  {
-    "name": "Starters",
-    "icon": Icons.fastfood,
-    "items": [
-      {"name": "Spring Rolls", "price": "₹100", "show": true},
-      {"name": "Fried Momos", "price": "₹120", "show": true},
-    ],
-  },
-  {"name": "Main Course", "icon": Icons.restaurant, "items": []},
-  {"name": "Desserts", "icon": Icons.cake, "items": []},
-  {"name": "Beverages", "icon": Icons.local_cafe, "items": []},
-];
-
 class CategoryListPage extends StatefulWidget {
   const CategoryListPage({Key? key}) : super(key: key);
 
@@ -54,6 +39,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
         children: [
           const SizedBox(height: 25),
           CommonHeader(
+            currentPage: "Category",
             showSearchBar: true,
             onSearchChanged: (val) {
               setState(() {
@@ -88,222 +74,192 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: categories.map((catDoc) {
-                      final categoryName = catDoc['categoryName'];
-                      return Container(
-                        width: cardWidth,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondaryBackground,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor:
-                                  AppColors.OrangeColor.withOpacity(0.2),
-                              child: const Icon(
-                                Icons.fastfood,
-                                color: AppColors.OrangeColor,
+                  child: Align(
+                    alignment: Alignment
+                        .topLeft, // ensures top-left alignment for single items
+                    child: Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: categories.map((catDoc) {
+                        final categoryName = catDoc['categoryName'];
+                        return Container(
+                          width: cardWidth,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondaryBackground,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                categoryName,
-                                style: const TextStyle(
-                                  color: AppColors.whiteColor,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor:
+                                    AppColors.OrangeColor.withOpacity(0.2),
+                                child: const Icon(
+                                  Icons.fastfood,
+                                  color: AppColors.OrangeColor,
                                 ),
                               ),
-                            ),
-                            PopupMenuButton(
-                              icon: const Icon(
-                                Icons.more_horiz,
-                                color: AppColors.OrangeColor,
-                              ),
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: const [
-                                      Icon(
-                                        Icons.edit,
-                                        color: AppColors.OrangeColor,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  categoryName,
+                                  style: const TextStyle(
+                                    color: AppColors.whiteColor,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: const [
-                                      Icon(
-                                        Icons.delete,
-                                        color: Colors.redAccent,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Delete'),
-                                    ],
-                                  ),
+                              ),
+                              PopupMenuButton(
+                                icon: const Icon(
+                                  Icons.more_horiz,
+                                  color: AppColors.OrangeColor,
                                 ),
-                              ],
-                              onSelected: (value) async {
-                                if (value == 'edit') {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EditCategoryPage(
-                                        categoryId: catDoc.id,
-                                        hotelID: hotelID,
-                                        initialName: catDoc['categoryName'],
-                                      ),
-                                    ),
-                                  ).then((_) => setState(() {}));
-                                }
-                                if (value == 'delete') {
-                                  final categoryId = catDoc.id;
-
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: const Text("Delete Category"),
-                                      content: const Text(
-                                        "Are you sure you want to delete this category and all its items?",
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: const Text("Cancel"),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: const [
+                                        Icon(
+                                          Icons.edit,
+                                          color: AppColors.OrangeColor,
                                         ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            Navigator.pop(
-                                              context,
-                                            ); // close dialog
-
-                                            try {
-                                              // 1️⃣ Fetch all items under this category
-                                              final catNumberID =
-                                                  catDoc['categoryID'];
-                                              final itemsSnapshot =
-                                                  await _firestore
-                                                      .collection('AddItem')
-                                                      .where(
-                                                        'categoryID',
-                                                        isEqualTo:
-                                                            catDoc['categoryID'],
-                                                      ) // Use number
-                                                      .get();
-                                              debugPrint(
-                                                "Found ${itemsSnapshot.docs.length} item(s) under category $catNumberID",
-                                              );
-
-                                              debugPrint(
-                                                "Found ${itemsSnapshot.docs.length} item(s) under category $categoryId",
-                                              );
-
-                                              // 2️⃣ Delete all item images + Firestore docs sequentially
-                                              int deletedCount = 0;
-                                              for (var itemDoc
-                                                  in itemsSnapshot.docs) {
-                                                final itemId = itemDoc.id;
-                                                final imagePath =
-                                                    itemDoc['imageUrl'];
-                                                debugPrint(
-                                                  "Deleting item ID: $itemId, imagePath: $imagePath",
-                                                );
-
-                                                // Delete Firestore doc first
-                                                await itemDoc.reference
-                                                    .delete();
-                                                deletedCount++;
-
-                                                // Delete image from Firebase Storage
-                                                if (imagePath != null &&
-                                                    imagePath.isNotEmpty) {
-                                                  try {
-                                                    final storageRef =
-                                                        FirebaseStorage.instanceFor(
-                                                          bucket:
-                                                              'gs://menu-scan-web.firebasestorage.app',
-                                                        ).ref(imagePath);
-                                                    await storageRef.delete();
-                                                    debugPrint(
-                                                      "✅ Deleted image: $imagePath",
-                                                    );
-                                                  } catch (e) {
-                                                    debugPrint(
-                                                      "❌ Failed to delete image $imagePath: $e",
-                                                    );
-                                                  }
-                                                }
-                                              }
-
-                                              debugPrint(
-                                                "Deleted $deletedCount item(s) from category $categoryId",
-                                              );
-
-                                              // 3️⃣ Delete the category document
-                                              await _firestore
-                                                  .collection('AddCategory')
-                                                  .doc(categoryId)
-                                                  .delete();
-
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    "Category and all items deleted",
-                                                  ),
-                                                ),
-                                              );
-                                            } catch (e) {
-                                              debugPrint(
-                                                "Error deleting category: $e",
-                                              );
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    "Error deleting category: $e",
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                          child: const Text(
-                                            "Delete",
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
                                       ],
                                     ),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: const [
+                                        Icon(
+                                          Icons.delete,
+                                          color: Colors.redAccent,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Delete'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                onSelected: (value) async {
+                                  if (value == 'edit') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => EditCategoryPage(
+                                          categoryId: catDoc.id,
+                                          hotelID: hotelID,
+                                          initialName: catDoc['categoryName'],
+                                        ),
+                                      ),
+                                    ).then((_) => setState(() {}));
+                                  }
+                                  if (value == 'delete') {
+                                    final categoryId = catDoc.id;
+
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text("Delete Category"),
+                                        content: const Text(
+                                          "Are you sure you want to delete this category and all its items?",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+
+                                              try {
+                                                final itemsSnapshot =
+                                                    await _firestore
+                                                        .collection('AddItem')
+                                                        .where(
+                                                          'categoryID',
+                                                          isEqualTo:
+                                                              catDoc['categoryID'],
+                                                        )
+                                                        .get();
+
+                                                for (var itemDoc
+                                                    in itemsSnapshot.docs) {
+                                                  final imagePath =
+                                                      itemDoc['imageUrl'];
+
+                                                  await itemDoc.reference
+                                                      .delete();
+
+                                                  if (imagePath != null &&
+                                                      imagePath.isNotEmpty) {
+                                                    try {
+                                                      final storageRef =
+                                                          FirebaseStorage.instanceFor(
+                                                            bucket:
+                                                                'gs://menu-scan-web.firebasestorage.app',
+                                                          ).ref(imagePath);
+                                                      await storageRef.delete();
+                                                    } catch (_) {}
+                                                  }
+                                                }
+
+                                                await _firestore
+                                                    .collection('AddCategory')
+                                                    .doc(categoryId)
+                                                    .delete();
+
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      "Category and all items deleted",
+                                                    ),
+                                                  ),
+                                                );
+                                              } catch (e) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      "Error deleting category: $e",
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            child: const Text(
+                                              "Delete",
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 );
               },

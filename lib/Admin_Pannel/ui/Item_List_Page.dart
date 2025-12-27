@@ -47,6 +47,7 @@ class _ItemListPageState extends State<ItemListPage> {
         children: [
           const SizedBox(height: 25),
           CommonHeader(
+            currentPage: "Items",
             showSearchBar: true,
             onSearchChanged: (val) {
               setState(() {

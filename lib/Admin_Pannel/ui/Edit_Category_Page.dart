@@ -64,7 +64,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-          const CommonHeader(showSearchBar: false),
+          const CommonHeader(showSearchBar: false, currentPage: "Category"),
           Expanded(
             child: Center(
               child: SingleChildScrollView(

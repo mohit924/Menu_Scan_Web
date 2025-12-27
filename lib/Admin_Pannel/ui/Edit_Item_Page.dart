@@ -160,7 +160,7 @@ class _EditItemPageState extends State<EditItemPage> {
       body: Column(
         children: [
           const SizedBox(height: 25),
-          const CommonHeader(showSearchBar: false),
+          const CommonHeader(showSearchBar: false, currentPage: "Items"),
           const SizedBox(height: 25),
           Expanded(
             child: Center(
